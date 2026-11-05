@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#090909" />
+    <meta name="description" content="A calm, focused daily schedule for your study routine." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="planplan" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="stylesheet" href="/styles.css" />
+    <title>planplan — daily system</title>
+  </head>
+  <body>
+    <div class="app-frame">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="planplan home">
+          <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="brand-name">planplan</span>
+        </a>
+        <div class="topbar-right">
+          <div class="live-clock" aria-live="off">
+            <span class="clock-dot"></span>
+            <time id="clock">--:--:--</time>
+          </div>
+          <button class="icon-button" id="edit-routine" type="button" aria-label="Edit routine" title="Edit routine">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main id="top">
+        <section class="intro-row">
+          <div>
+            <p class="eyebrow" id="date-label">YOUR DAILY SYSTEM</p>
+            <h1>Make the day <span>count.</span></h1>
+            <p class="intro-copy">One block at a time. Keep your focus on the next thing.</p>
+          </div>
+          <div class="day-stamp">
+            <span class="day-stamp-label">TODAY</span>
+            <strong id="day-stamp">—</strong>
+            <span id="month-stamp">—</span>
+          </div>
+        </section>
+
+        <section class="overview-grid" aria-label="Daily overview">
+          <article class="current-card panel">
+            <div class="current-topline">
+              <span class="live-label"><span class="pulse-dot"></span><span id="current-kicker">UP NEXT</span></span>
+              <span class="current-time" id="current-time-range">—</span>
+            </div>
+            <div class="current-main">
+              <div>
+                <p class="current-caption" id="current-caption">YOUR NEXT BLOCK</p>
+                <h2 id="current-title">Loading your routine</h2>
+                <p id="current-detail" class="current-detail">—</p>
+              </div>
+              <button class="primary-button" id="current-action" type="button">Start focus <span aria-hidden="true">↗</span></button>
+            </div>
+            <div class="current-bottom">
+              <div class="progress-copy"><span>Daily progress</span><strong id="progress-text">0 / 8 done</strong></div>
+              <div class="progress-track"><span id="progress-fill"></span></div>
+            </div>
+          </article>
+
+          <article class="stats-card panel">
+            <div class="stats-heading"><span class="eyebrow">ON THE BOARD</span><span class="tiny-mark">✳</span></div>
+            <div class="stat-number" id="done-percent">0<span>%</span></div>
+            <p class="stat-description">of your scheduled blocks completed</p>
+            <div class="stat-divider"></div>
+            <div class="stat-bottom"><span id="remaining-count">8 blocks to go</span><span class="stat-arrow">↗</span></div>
+          </article>
+        </section>
+
+        <section class="workspace-grid">
+          <section class="schedule-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">THE ROUTINE</p>
+                <h2>Your day, in blocks</h2>
+              </div>
+              <span class="section-meta" id="block-count">8 BLOCKS</span>
+            </div>
+            <div id="schedule-list" class="schedule-list" aria-live="polite"></div>
+            <p class="schedule-footnote"><span class="footnote-dot"></span> Gaps between blocks are yours to use. No need to fill every minute.</p>
+          </section>
+
+          <aside class="side-column">
+            <section class="timer-card panel">
+              <div class="side-heading">
+                <div><p class="eyebrow">STAY WITH IT</p><h2>Focus timer</h2></div>
+                <span class="timer-symbol" aria-hidden="true">◷</span>
+              </div>
+              <p class="timer-context" id="timer-context">A quiet stretch of focused work.</p>
+              <div class="timer-display" id="timer-display" role="timer" aria-live="off">50:00</div>
+              <div class="timer-state" id="timer-state">READY WHEN YOU ARE</div>
+              <div class="timer-presets" aria-label="Timer presets">
+                <button type="button" data-minutes="25">25m</button>
+                <button type="button" data-minutes="50" class="selected">50m</button>
+                <button type="button" data-minutes="90">90m</button>
+              </div>
+              <div class="timer-custom"><label for="custom-minutes">Custom</label><div><input id="custom-minutes" type="number" min="1" max="720" value="50" inputmode="numeric" /><span>min</span></div></div>
+              <div class="timer-actions">
+                <button type="button" id="timer-start" class="primary-button timer-main-button">Start timer <span aria-hidden="true">↗</span></button>
+                <button type="button" id="timer-reset" class="secondary-button" aria-label="Reset timer">Reset</button>
+              </div>
+            </section>
+
+            <section class="notes-card panel">
+              <div class="side-heading">
+                <div><p class="eyebrow">SELECTED BLOCK</p><h2 id="selected-title">Revise</h2></div>
+                <span class="notes-symbol" aria-hidden="true">⌁</span>
+              </div>
+              <p class="notes-hint" id="selected-hint">Keep the exact topics you want to cover here.</p>
+              <label class="field-label" for="block-note">FOCUS NOTES</label>
+              <textarea id="block-note" rows="3" placeholder="Topics, chapters, questions to revisit…"></textarea>
+              <div class="save-hint"><span class="save-dot"></span> Saved on this device</div>
+            </section>
+
+            <section class="tomorrow-card panel">
+              <div class="side-heading">
+                <div><p class="eyebrow">10:30 PM — 11:00 PM</p><h2>Plan tomorrow</h2></div>
+                <span class="tomorrow-symbol" aria-hidden="true">↗</span>
+              </div>
+              <textarea id="tomorrow-note" rows="3" placeholder="Set your targets for tomorrow…"></textarea>
+              <div class="save-hint"><span class="save-dot"></span> Saved on this device</div>
+            </section>
+          </aside>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <span><span class="footer-mark">●</span> Built for consistency, not perfection.</span>
+        <span>OFFLINE READY <span class="footer-divider">/</span> PRIVATE BY DEFAULT</span>
+      </footer>
+    </div>
+
+    <dialog id="routine-dialog" class="routine-dialog">
+      <form method="dialog" class="dialog-shell" id="routine-form">
+        <div class="dialog-heading">
+          <div><p class="eyebrow">MAKE IT YOURS</p><h2>Edit your routine</h2><p>Times use your device's local timezone.</p></div>
+          <button type="button" class="icon-button" id="close-dialog" aria-label="Close editor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"/></svg></button>
+        </div>
+        <div id="editor-list" class="editor-list"></div>
+        <div class="editor-toolbar"><button type="button" id="add-block" class="secondary-button">＋ Add block</button><button type="button" id="restore-defaults" class="text-button">Restore default routine</button></div>
+        <div class="dialog-actions"><button type="button" class="secondary-button" id="cancel-edit">Cancel</button><button type="submit" class="primary-button">Save routine <span aria-hidden="true">↗</span></button></div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
