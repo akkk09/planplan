@@ -43,7 +43,9 @@ Then open <http://localhost:4173>.
 
 The repository includes a GitHub Actions workflow at `.github/workflows/deploy.yml`. It publishes the static app whenever you push to `main`, and can also be run manually from the Actions tab.
 
-After the first successful run, the app is available at:
+**One-time setup:** open [Repository Settings → Pages](https://github.com/akkk09/planplan/settings/pages) and set **Build and deployment → Source** to **GitHub Actions**. Then open the [Actions tab](https://github.com/akkk09/planplan/actions/workflows/deploy.yml) and check the **Deploy to GitHub Pages** run.
+
+After the workflow succeeds, the app is available at:
 
 <https://akkk09.github.io/planplan/>
 
