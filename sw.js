@@ -1,4 +1,4 @@
-const CACHE_NAME = 'planplan-shell-v2';
+const CACHE_NAME = 'planplan-shell-v3';
 const APP_BASE = self.registration.scope;
 const APP_SHELL = [
   '',

@@ -3,7 +3,9 @@
 const STORAGE = {
   routine: 'planplan:routine:v1',
   days: 'planplan:days:v1',
-  timer: 'planplan:timer:v1'
+  timer: 'planplan:timer:v1',
+  weakTopics: 'planplan:weak-topics:v1',
+  journal: 'planplan:journal:v1'
 };
 
 const DEFAULT_BLOCKS = [
@@ -47,6 +49,11 @@ let dayData = getDayData(dateKey);
 let selectedId = blocks[1]?.id ?? blocks[0].id;
 let selectedMinutes = 50;
 let timer = readJSON(STORAGE.timer, { status: 'idle', endsAt: null, remainingMs: 50 * 60 * 1000, totalMs: 50 * 60 * 1000 });
+let weakTopics = readJSON(STORAGE.weakTopics, []);
+if (!Array.isArray(weakTopics)) weakTopics = [];
+let journalEntries = readJSON(STORAGE.journal, []);
+if (!Array.isArray(journalEntries)) journalEntries = [];
+let activeJournalDate = getDateKey(new Date());
 let toastTimeout;
 
 function getDateKey(date) {
@@ -494,6 +501,158 @@ function initEvents() {
   });
 }
 
+
+function makeRecordId() {
+  return globalThis.crypto?.randomUUID?.() || `entry-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function formatRecordDate(value) {
+  if (!value) return '';
+  const date = new Date(`${value}T12:00:00`);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function renderWeakTopics() {
+  const filter = $('#weak-filter')?.value || 'all';
+  const visible = weakTopics
+    .filter((item) => filter === 'all' || item.subject === filter)
+    .sort((a, b) => (a.status === 'done') - (b.status === 'done') || String(b.createdAt).localeCompare(String(a.createdAt)));
+  const activeCount = weakTopics.filter((item) => item.status !== 'done').length;
+  $('#weak-count').textContent = `${activeCount} TO REVISIT`;
+  if (!visible.length) {
+    $('#weak-topic-list').innerHTML = '<div class="empty-record">No weak topics here yet. Add one above when a question exposes a gap.</div>';
+    return;
+  }
+  $('#weak-topic-list').innerHTML = visible.map((item) => {
+    const status = item.status || 'todo';
+    const statusText = status === 'done' ? 'Cleared' : status === 'doing' ? 'Working on it' : 'To revisit';
+    return `<article class="weak-topic-item ${status === 'done' ? 'is-cleared' : ''}" data-id="${safeText(item.id)}">
+      <div class="weak-topic-top"><div><span class="weak-topic-subject">${safeText(item.subject)}</span><h3>${safeText(item.topic)}</h3></div><button type="button" class="record-delete" data-action="delete-weak" aria-label="Delete ${safeText(item.topic)}">×</button></div>
+      ${item.detail ? `<p>${safeText(item.detail)}</p>` : ''}
+      <div class="weak-topic-controls">
+        <select data-action="weak-status" aria-label="Status for ${safeText(item.topic)}">
+          <option value="todo" ${status === 'todo' ? 'selected' : ''}>To revisit</option>
+          <option value="doing" ${status === 'doing' ? 'selected' : ''}>Working on it</option>
+          <option value="done" ${status === 'done' ? 'selected' : ''}>Cleared</option>
+        </select>
+        <span class="weak-topic-date">${statusText} · ${formatRecordDate(item.createdAt?.slice(0, 10))}</span>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function renderJournalList() {
+  const sorted = [...journalEntries].sort((a, b) => b.date.localeCompare(a.date));
+  $('#journal-count').textContent = `${sorted.length} ${sorted.length === 1 ? 'entry' : 'entries'}`;
+  if (!sorted.length) {
+    $('#journal-list').innerHTML = '<div class="empty-record">Your journal starts here. Save a few lines about today.</div>';
+    return;
+  }
+  $('#journal-list').innerHTML = sorted.map((entry) => {
+    const preview = (entry.content || '').replace(/\s+/g, ' ').trim();
+    return `<article class="journal-entry" data-date="${safeText(entry.date)}">
+      <button type="button" class="journal-entry-open" data-action="open-journal" data-date="${safeText(entry.date)}">
+        <time>${safeText(formatRecordDate(entry.date))}</time>
+        <strong>${safeText(entry.title || 'Daily reflection')}</strong>
+        <span>${safeText(preview || 'No text in this entry.')}</span>
+      </button>
+      <button type="button" class="record-delete" data-action="delete-journal" data-date="${safeText(entry.date)}" aria-label="Delete journal entry for ${safeText(entry.date)}">×</button>
+    </article>`;
+  }).join('');
+}
+
+function loadJournalEntry(date) {
+  activeJournalDate = date;
+  const entry = journalEntries.find((item) => item.date === date);
+  $('#journal-date').value = date;
+  $('#journal-title').value = entry?.title || '';
+  $('#journal-content').value = entry?.content || '';
+}
+
+function renderRecords() {
+  renderWeakTopics();
+  renderJournalList();
+  loadJournalEntry(activeJournalDate);
+}
+
+function saveJournalEntry(event) {
+  event.preventDefault();
+  const date = $('#journal-date').value;
+  const content = $('#journal-content').value.trim();
+  const title = $('#journal-title').value.trim();
+  if (!date || !content) {
+    showToast('Add a date and a few lines before saving.');
+    return;
+  }
+  activeJournalDate = date;
+  const entry = { date, title: title || 'Daily reflection', content, updatedAt: new Date().toISOString() };
+  journalEntries = journalEntries.filter((item) => item.date !== date);
+  journalEntries.push(entry);
+  writeJSON(STORAGE.journal, journalEntries);
+  renderJournalList();
+  showToast('Journal entry saved on this device.');
+}
+
+function initRecordEvents() {
+  $('#weak-topic-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const subject = $('#weak-subject').value;
+    const topic = $('#weak-topic').value.trim();
+    const detail = $('#weak-detail').value.trim();
+    if (!topic) return;
+    weakTopics.push({ id: makeRecordId(), subject, topic, detail, status: 'todo', createdAt: new Date().toISOString() });
+    writeJSON(STORAGE.weakTopics, weakTopics);
+    $('#weak-topic-form').reset();
+    renderWeakTopics();
+    showToast('Weak topic added to your revision list.');
+    $('#weak-topic').focus();
+  });
+
+  $('#weak-filter').addEventListener('change', renderWeakTopics);
+  $('#weak-topic-list').addEventListener('change', (event) => {
+    const select = event.target.closest('select[data-action="weak-status"]');
+    if (!select) return;
+    const item = weakTopics.find((topic) => topic.id === select.closest('[data-id]')?.dataset.id);
+    if (!item) return;
+    item.status = select.value;
+    writeJSON(STORAGE.weakTopics, weakTopics);
+    renderWeakTopics();
+  });
+  $('#weak-topic-list').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-action="delete-weak"]');
+    if (!button) return;
+    const id = button.closest('[data-id]')?.dataset.id;
+    weakTopics = weakTopics.filter((item) => item.id !== id);
+    writeJSON(STORAGE.weakTopics, weakTopics);
+    renderWeakTopics();
+    showToast('Weak topic removed.');
+  });
+
+  $('#journal-form').addEventListener('submit', saveJournalEntry);
+  $('#journal-date').addEventListener('change', (event) => loadJournalEntry(event.target.value));
+  $('#journal-new').addEventListener('click', () => {
+    loadJournalEntry(getDateKey(new Date()));
+    $('#journal-title').focus();
+  });
+  $('#journal-list').addEventListener('click', (event) => {
+    const open = event.target.closest('[data-action="open-journal"]');
+    if (open) {
+      loadJournalEntry(open.dataset.date);
+      $('#journal-title').focus();
+      return;
+    }
+    const remove = event.target.closest('[data-action="delete-journal"]');
+    if (!remove) return;
+    const date = remove.dataset.date;
+    if (!window.confirm(`Delete the journal entry for ${formatRecordDate(date)}?`)) return;
+    journalEntries = journalEntries.filter((item) => item.date !== date);
+    writeJSON(STORAGE.journal, journalEntries);
+    if (activeJournalDate === date) loadJournalEntry(getDateKey(new Date()));
+    renderJournalList();
+    showToast('Journal entry deleted.');
+  });
+}
+
 function init() {
   if (timer.status === 'running' && timer.endsAt <= Date.now()) {
     timer.status = 'idle';
@@ -503,6 +662,9 @@ function init() {
   }
   renderTimerControls();
   initEvents();
+  initRecordEvents();
+  $('#journal-date').value = activeJournalDate;
+  renderRecords();
   renderAll();
   updateClock();
   setInterval(updateClock, 1000);

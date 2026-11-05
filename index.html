@@ -130,6 +130,67 @@
             </section>
           </aside>
         </section>
+
+        <section class="records-grid" aria-label="Study records">
+          <section class="records-panel panel">
+            <div class="section-heading">
+              <div><p class="eyebrow">BUILD YOUR REVISION LIST</p><h2>Weak topics</h2></div>
+              <span class="section-meta" id="weak-count">0 TO REVISIT</span>
+            </div>
+            <p class="records-intro">Capture a topic the moment it trips you up. Keep the reason and what you need to do next.</p>
+            <form id="weak-topic-form" class="weak-form">
+              <div class="weak-form-row">
+                <label class="record-field"><span>SUBJECT</span>
+                  <select id="weak-subject" required>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+                <label class="record-field topic-field"><span>TOPIC</span><input id="weak-topic" maxlength="90" placeholder="e.g. Rotational dynamics" required /></label>
+              </div>
+              <label class="record-field"><span>WHAT'S TRIPPING YOU UP? <em>OPTIONAL</em></span>
+                <textarea id="weak-detail" rows="2" maxlength="320" placeholder="Concept gap, formula recall, question type, or next step…"></textarea>
+              </label>
+              <button class="primary-button record-submit" type="submit">Add weak topic <span aria-hidden="true">＋</span></button>
+            </form>
+            <div class="record-toolbar">
+              <span class="field-label">YOUR TOPIC LIST</span>
+              <select id="weak-filter" aria-label="Filter weak topics by subject">
+                <option value="all">All subjects</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div id="weak-topic-list" class="weak-topic-list" aria-live="polite"></div>
+          </section>
+
+          <section class="records-panel panel journal-panel">
+            <div class="section-heading">
+              <div><p class="eyebrow">THINK IT THROUGH</p><h2>Daily journal</h2></div>
+              <span class="journal-mark" aria-hidden="true">✳</span>
+            </div>
+            <p class="records-intro">Log how the day went, what you learned, and what you want to change tomorrow.</p>
+            <form id="journal-form" class="journal-form">
+              <div class="journal-form-head">
+                <label class="record-field journal-date-field"><span>ENTRY DATE</span><input id="journal-date" type="date" required /></label>
+                <label class="record-field journal-title-field"><span>TITLE <em>OPTIONAL</em></span><input id="journal-title" maxlength="80" placeholder="A quick day review" /></label>
+              </div>
+              <label class="record-field"><span>YOUR ENTRY</span>
+                <textarea id="journal-content" rows="7" maxlength="5000" placeholder="What went well? What felt hard? What did you learn? What will you do differently tomorrow?" required></textarea>
+              </label>
+              <div class="journal-actions">
+                <button class="secondary-button" id="journal-new" type="button">New entry</button>
+                <button class="primary-button record-submit" type="submit">Save journal <span aria-hidden="true">↗</span></button>
+              </div>
+            </form>
+            <div class="record-toolbar journal-history-heading"><span class="field-label">PAST ENTRIES</span><span id="journal-count" class="record-muted">0 entries</span></div>
+            <div id="journal-list" class="journal-list" aria-live="polite"></div>
+          </section>
+        </section>
       </main>
 
       <footer class="app-footer">

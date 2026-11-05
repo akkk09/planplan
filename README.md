@@ -8,11 +8,13 @@ A small, installable daily planner built around a fixed study routine. It is a s
 - Daily check-offs and a progress summary.
 - Focus timer with 25, 50 and 90 minute presets, plus a custom duration.
 - Per-block focus notes and a note for planning tomorrow.
+- Weak-topic tracker for Physics, Chemistry, Mathematics and other subjects, with progress status.
+- Dated daily journal with editable past entries.
 - Editable routine, including adding and removing blocks.
 - Local-first storage with offline support after the first visit.
 - Responsive layout for phones, tablets and desktop browsers.
 
-All routine data, notes, check-offs and timer state stay in the browser's local storage. They do not sync between devices.
+All routine data, notes, check-offs, weak topics, journal entries and timer state stay in the browser's local storage. They do not sync between devices.
 
 ## Default routine
 
