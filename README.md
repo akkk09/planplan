@@ -39,14 +39,17 @@ python -m http.server 4173
 
 Then open <http://localhost:4173>.
 
-## Deploy to Vercel
+## Deploy to GitHub Pages
 
-1. Import `akkk09/planplan` from GitHub in Vercel.
-2. Keep the Framework Preset as **Other**.
-3. Leave Build Command and Output Directory empty; the app is served from the repository root.
-4. Deploy.
+The repository includes a GitHub Actions workflow at `.github/workflows/deploy.yml`. It publishes the static app whenever you push to `main`, and can also be run manually from the Actions tab.
 
-The included `vercel.json` sets the service worker headers. HTTPS is required for PWA installation outside localhost.
+After the first successful run, the app is available at:
+
+<https://akkk09.github.io/planplan/>
+
+The workflow uses GitHub's Pages deployment actions and requires no build command. The app is configured for the `/planplan/` project-site path, including its service worker and PWA manifest.
+
+You can also deploy the same static files to Vercel; no build step is needed.
 
 ## Install
 
