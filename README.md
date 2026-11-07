@@ -35,7 +35,7 @@ Choose a strong, unique password. On your computer, generate its SHA-256 hash wi
 
 ```sh
 read -rsp "Planplan password: " PLANPLAN_PASSWORD
-printf '\\n'
+printf '\n'
 printf %s "$PLANPLAN_PASSWORD" | sha256sum
 unset PLANPLAN_PASSWORD
 ```
