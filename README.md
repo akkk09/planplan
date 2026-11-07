@@ -1,6 +1,6 @@
 # planplan
 
-A small, installable daily planner built around a fixed study routine. It is a static PWA: no framework, server, account, database, API key or build step is required.
+A small, installable daily planner built around a fixed study routine. The app is a static PWA with Cloudflare Pages middleware for server-side password protection. No framework, database or build step is required.
 
 ## Features
 
@@ -11,25 +11,52 @@ A small, installable daily planner built around a fixed study routine. It is a s
 - Weak-topic tracker for Physics, Chemistry, Mathematics and other subjects, with progress status.
 - Dated daily journal with editable past entries.
 - Editable routine, including adding and removing blocks.
-- Local-first storage with offline support after the first visit.
-- Responsive layout for phones, tablets and desktop browsers.
+- Local-first storage. Your routine, notes, check-offs and journal entries stay in this browser.
 
-All routine data, notes, check-offs, weak topics, journal entries and timer state stay in the browser's local storage. They do not sync between devices.
+## Password protection
 
-## Default routine
+The app must be hosted on **Cloudflare Pages** for password protection to work. The global Pages Function in `functions/_middleware.js` checks every request, including HTML, JavaScript, CSS, icons and the manifest, before Cloudflare serves the file. It uses HTTP Basic Authentication over HTTPS.
 
-| Time | Block |
-| --- | --- |
-| 23:00–06:00 | Sleep / wake up |
-| 07:00–08:00 | Revise |
-| 09:00–12:00 | 3-hour test |
-| 12:00–13:00 | Analyze test |
-| 15:00–17:00 | Weak areas |
-| 18:00–19:30 | Continue weak areas |
-| 21:30–22:30 | Allen tests |
-| 22:30–23:00 | Plan tomorrow |
+The middleware fails closed: if its password hash is missing or invalid, the site returns an error instead of exposing the app.
 
-The overnight block is shown first. Times are interpreted in the device's local timezone. The gaps between listed blocks stay open.
+### Deploy on Cloudflare Pages
+
+1. Sign in to Cloudflare and open **Workers & Pages**.
+2. Choose **Create application → Pages → Connect to Git**.
+3. Connect GitHub and select `akkk09/planplan`.
+4. Set the production branch to `main`. Leave the build command blank and set the build output directory to `.` (the repository root).
+5. Create the project and wait for its first deployment.
+
+Cloudflare Pages detects the `functions/` directory automatically. See the [Cloudflare Pages Git integration guide](https://developers.cloudflare.com/pages/get-started/git-integration/) and [Pages middleware guide](https://developers.cloudflare.com/pages/functions/middleware/).
+
+### Set the password
+
+Choose a strong, unique password. On your computer, generate its SHA-256 hash without a trailing newline:
+
+```sh
+read -rsp "Planplan password: " PLANPLAN_PASSWORD
+printf '\\n'
+printf %s "$PLANPLAN_PASSWORD" | sha256sum
+unset PLANPLAN_PASSWORD
+```
+
+Copy the 64-character hex digest. In Cloudflare, open your Pages project → **Settings → Variables and Secrets → Add**. Add this variable:
+
+- Name: `PLANPLAN_PASSWORD_SHA256`
+- Value: the 64-character hash
+- Environment: **Production** (also set it for Preview if you want preview URLs protected)
+
+Save the setting and trigger a new deployment. Do not put the password or its hash in this repository. Use a long passphrase; a weak password can be guessed from its hash.
+
+When you open the site, your browser will show a username/password prompt. The username can be any value; enter your chosen password in the password field.
+
+### Important: turn off the old GitHub Pages site
+
+GitHub Pages cannot enforce this password check. The old public deployment may remain reachable even after Cloudflare is set up.
+
+After confirming that the Cloudflare Pages URL works and prompts for a password, open [Repository Settings → Pages](https://github.com/akkk09/planplan/settings/pages) and disable GitHub Pages (set the source to **Deploy from a branch** only if you intend to keep a public branch site; otherwise disable/remove the Pages deployment source). Also check that the old `https://akkk09.github.io/planplan/` URL no longer serves the app.
+
+The old GitHub Pages deployment workflow has been removed so future pushes will not republish an unprotected copy.
 
 ## Run locally
 
@@ -39,31 +66,11 @@ Serve this folder over HTTP. For example:
 python -m http.server 4173
 ```
 
-Then open <http://localhost:4173>.
+The local development server does not enforce the Cloudflare password check.
 
-## Deploy to GitHub Pages
+## Storage and offline use
 
-The repository includes a GitHub Actions workflow at `.github/workflows/deploy.yml`. It publishes the static app whenever you push to `main`, and can also be run manually from the Actions tab.
-
-**One-time setup:** open [Repository Settings → Pages](https://github.com/akkk09/planplan/settings/pages) and set **Build and deployment → Source** to **GitHub Actions**. Then open the [Actions tab](https://github.com/akkk09/planplan/actions/workflows/deploy.yml) and check the **Deploy to GitHub Pages** run.
-
-After the workflow succeeds, the app is available at:
-
-<https://akkk09.github.io/planplan/>
-
-The workflow uses GitHub's Pages deployment actions and requires no build command. The app is configured for the `/planplan/` project-site path, including its service worker and PWA manifest.
-
-You can also deploy the same static files to Vercel; no build step is needed.
-
-## Install
-
-- **Android / Chromium:** use the browser's Install app option.
-- **iOS / iPadOS:** use Share → Add to Home Screen in Safari.
-- **Desktop:** use the install icon in a supported browser's address bar or menu.
-
-## Privacy and storage
-
-This app does not send your data to a server. Clearing the browser's site data removes saved routine edits, notes and check-offs. There is no automatic cross-device sync or backup.
+Routine data, notes, check-offs, weak topics, journal entries and timer state stay in browser local storage. They do not sync between devices. The service worker and offline cache have been retired so cached app files cannot bypass the server-side password check.
 
 ## License
 
