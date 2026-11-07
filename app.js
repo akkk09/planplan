@@ -668,8 +668,15 @@ function init() {
   renderAll();
   updateClock();
   setInterval(updateClock, 1000);
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    window.addEventListener('load', () => navigator.serviceWorker.register(new URL('sw.js', document.baseURI), { scope: new URL('./', document.baseURI).pathname }).catch(() => {}));
+  // Password-protected hosting must not serve cached app files while offline.
+  // Remove any service worker and caches left by older Planplan versions.
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations()
+      .then((registrations) => registrations.forEach((registration) => registration.unregister()))
+      .catch(() => {});
+  }
+  if ('caches' in window) {
+    caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))).catch(() => {});
   }
 }
 
